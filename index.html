@@ -2,27 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mason’s Mansion | Honey Edition</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mason’s Mansion | Honey Perfect</title>
     <style>
         :root {
-            --bg: #050400; /* Darker for less eye strain */
+            --bg: #050400;
             --accent: #ffcc33; /* Honey Gold */
-            --glow: rgba(255, 204, 51, 0.3);
-            --glass: rgba(20, 18, 10, 0.95);
-            --border: rgba(255, 255, 255, 0.08);
+            --glow: rgba(255, 204, 51, 0.4);
+            --glass: rgba(15, 12, 5, 0.92);
+            --border: rgba(255, 204, 51, 0.2);
             --text: #ffffff;
             --font: 'Segoe UI', system-ui, sans-serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
         body, html { 
             width: 100%; height: 100%; overflow: hidden; 
             background: var(--bg); color: var(--text); 
-            font-family: var(--font); cursor: crosshair;
+            font-family: var(--font); cursor: crosshair; touch-action: none;
         }
 
-        #bg-canvas { position: fixed; inset: 0; z-index: 0; }
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; background: radial-gradient(circle at center, #1a1500 0%, #050400 100%); }
 
         /* --- AUTH --- */
         #auth-overlay {
@@ -30,44 +30,40 @@
             display: flex; align-items: center; justify-content: center;
             background: #000; transition: 1s;
         }
-        .login-card { background: var(--glass); padding: 40px; border-radius: 30px; border: 1px solid var(--accent); text-align: center; width: 350px; box-shadow: 0 0 30px rgba(0,0,0,0.5); }
-        .login-card h1 { color: var(--accent); letter-spacing: 5px; margin-bottom: 5px; font-size: 24px; }
+        .login-card { background: var(--glass); padding: 40px; border-radius: 30px; border: 1px solid var(--accent); text-align: center; width: 350px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .login-card h1 { color: var(--accent); letter-spacing: 5px; margin-bottom: 5px; font-size: 24px; text-shadow: 0 0 10px var(--glow); }
         .credits { font-size: 10px; opacity: 0.6; margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase; }
-        .login-card input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 10px; color: #fff; margin-bottom: 10px; text-align: center; }
-        .login-card button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: #000; font-weight: 900; cursor: pointer; }
+        .login-card input { width: 100%; background: #000; border: 1px solid var(--border); padding: 12px; border-radius: 10px; color: #fff; margin-bottom: 10px; text-align: center; transition: 0.3s; }
+        .login-card input:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--glow); }
+        .login-card button { width: 100%; padding: 12px; border-radius: 10px; border: none; background: var(--accent); color: #000; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .login-card button:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--accent); }
 
-        /* --- MADNESS LIST (SIDEBAR) --- */
+        /* --- SIDEBAR --- */
         #sidebar {
             position: fixed; left: -240px; top: 50%; transform: translateY(-50%);
             width: 240px; background: var(--glass); border: 1px solid var(--border);
             padding: 20px; border-radius: 0 20px 20px 0; z-index: 2000;
             transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
         }
-        #sidebar.open { left: 0; box-shadow: 0 0 30px var(--glow); border-right: 2px solid var(--accent); }
+        #sidebar.open { left: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.5); border-right: 2px solid var(--accent); }
         #sidebar-tab {
             position: absolute; right: -40px; top: 50%; transform: translateY(-50%);
-            background: var(--accent); color: #000; padding: 12px 8px;
+            background: var(--accent); color: #000; padding: 15px 8px;
             border-radius: 0 10px 10px 0; cursor: pointer; font-weight: 900; writing-mode: vertical-rl; font-size: 12px;
+            box-shadow: 5px 0 15px var(--glow);
         }
 
         .option-btn { width: 100%; padding: 10px; margin: 4px 0; background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: #fff; border-radius: 8px; font-size: 11px; cursor: pointer; text-align: left; }
-        .option-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); }
+        .option-btn:hover { background: rgba(255,204,51,0.1); border-color: var(--accent); }
         .option-btn.active { background: var(--accent); color: #000; font-weight: bold; }
 
         /* --- DESKTOP --- */
         #desktop { position: relative; width: 100vw; height: 100vh; z-index: 10; display: none; }
-        .window { position: absolute; background: var(--glass); border: 1px solid var(--border); border-radius: 15px; backdrop-filter: blur(15px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; display: flex; flex-direction: column; }
-        .win-header { padding: 10px 15px; background: rgba(255,255,255,0.03); cursor: move; display: flex; justify-content: space-between; align-items: center; }
-        .win-title { font-size: 11px; font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; }
-        .win-close { cursor: pointer; color: #ff5f56; font-weight: bold; font-size: 18px; }
+        #taskbar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--glass); border: 1px solid var(--border); padding: 10px 20px; border-radius: 20px; display: flex; gap: 15px; z-index: 1000; backdrop-filter: blur(10px); }
+        .t-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 14px; cursor: pointer; font-size: 24px; transition: 0.3s; }
+        .t-icon:hover { transform: translateY(-10px) scale(1.1); background: var(--accent); color: #000; box-shadow: 0 10px 20px var(--glow); }
 
-        #taskbar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--glass); border: 1px solid var(--border); padding: 10px 20px; border-radius: 20px; display: flex; gap: 15px; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .t-icon { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 14px; cursor: pointer; font-size: 24px; transition: 0.2s; }
-        .t-icon:hover { transform: translateY(-8px); background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
-
-        iframe { width: 100%; height: 100%; border: none; background: #000; }
-        .setting-row { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
-        input[type="range"] { accent-color: var(--accent); width: 100px; cursor: pointer; }
         .hidden { display: none !important; }
     </style>
 </head>
@@ -77,197 +73,222 @@
 
     <div id="auth-overlay">
         <div class="login-card">
-            <h1>MASON V11</h1>
-            <p class="credits">Mason Porrazzo Edition</p>
-            <input type="password" id="sys-pass" placeholder="PASSWORD">
-            <button onclick="Mansion.init()">ENTER</button>
+            <h1>MASON V16</h1>
+            <p class="credits">Advanced Physics Edition</p>
+            <input type="password" id="sys-pass" placeholder="PASSWORD" onkeydown="if(event.key==='Enter') Mansion.init()">
+            <button onclick="Mansion.init()">ENTER SYSTEM</button>
         </div>
     </div>
 
     <div id="desktop">
         <div id="sidebar">
-            <div id="sidebar-tab" onclick="document.getElementById('sidebar').classList.toggle('open')">MADNESS LIST</div>
-            <h4 style="font-size: 10px; color: var(--accent); margin-bottom: 10px; letter-spacing: 2px;">MODIFIERS</h4>
-            <button class="option-btn" onclick="Mansion.chaosBurst()">+ Spawn Swarm (H)</button>
-            <button class="option-btn" id="m-rgb" onclick="Mansion.toggle('rgb')">1. RGB Madness</button>
-            <button class="option-btn" id="m-trails" onclick="Mansion.toggle('trails')">2. Phantom Trails</button>
-            <button class="option-btn" id="m-magnet" onclick="Mansion.toggle('magnet')">3. Magnetism</button>
-            <button class="option-btn" id="m-speed" onclick="Mansion.toggle('speed')">4. Warp Speed</button>
-            <button class="option-btn" id="m-vibrate" onclick="Mansion.toggle('vibrate')">5. Jitter Mode</button>
-            <button class="option-btn" id="m-shadow" onclick="Mansion.toggle('shadow')">6. Void Center</button>
+            <div id="sidebar-tab" onclick="document.getElementById('sidebar').classList.toggle('open')">PHYSICS ENGINE</div>
+            <h4 style="font-size: 10px; color: var(--accent); margin-bottom: 10px; letter-spacing: 2px;">WORLD CONTROLS</h4>
+            <button class="option-btn" onclick="Mansion.spawnSwarm()">1. Spawn Cluster (H)</button>
+            <button class="option-btn active" id="m-bounce" onclick="Mansion.toggle('bounce')">2. Elastic Collision</button>
+            <button class="option-btn" id="m-magnet" onclick="Mansion.toggle('magnet')">3. Mouse Gravity</button>
+            <button class="option-btn" id="m-float" onclick="Mansion.toggle('float')">4. Anti-Gravity</button>
+            <button class="option-btn" id="m-rgb" onclick="Mansion.toggle('rgb')">5. RGB Chromatic</button>
+            <button class="option-btn" onclick="Mansion.clearOrbs()">6. Clear Board</button>
             <hr style="opacity: 0.1; margin: 10px 0;">
-            <p style="font-size: 9px; opacity: 0.5; text-align:center;">H: Swarm | B: Blackhole | F: Freeze</p>
+            <p style="font-size: 9px; opacity: 0.5; text-align:center;">Click to Pop | Drag to Move</p>
         </div>
 
-        <div id="win-layer"></div>
         <div id="taskbar">
-            <div class="t-icon" onclick="Mansion.spawn('games')">🎮</div>
-            <div class="t-icon" onclick="Mansion.spawn('themes')">🎨</div>
-            <div class="t-icon" onclick="Mansion.spawn('settings')">⚙️</div>
-            <div id="owner-icon" class="t-icon hidden" onclick="Mansion.spawn('owner')">👑</div>
+            <div class="t-icon" title="Games">🎮</div>
+            <div class="t-icon" title="Themes">🎨</div>
+            <div class="t-icon" title="Settings">⚙️</div>
+            <div id="owner-icon" class="t-icon hidden">👑</div>
         </div>
     </div>
 
     <script>
         const Mansion = {
-            rank: 'guest',
-            orbs: [],
-            isMouseDown: false,
-            freeze: false, blackhole: false,
-            boundary: 100, 
-            baseRadius: 40,
-            mods: { rgb: false, trails: false, magnet: false, speed: false, vibrate: false, shadow: false },
-            themes: [
-                { n: 'Honey Gold', a: '#ffcc33', g: 'rgba(255, 204, 51, 0.3)' },
-                { n: 'Cyan Nova', a: '#00f2ff', g: 'rgba(0, 242, 255, 0.3)' },
-                { n: 'Blood Moon', a: '#ff3c00', g: 'rgba(255, 60, 0, 0.3)' },
-                { n: 'Acid Lime', a: '#00ff88', g: 'rgba(0, 255, 136, 0.3)' }
-            ],
+            canvas: null, ctx: null, orbs: [],
+            mouse: { x: -1000, y: -1000, active: false },
+            mods: { bounce: true, magnet: false, float: false, rgb: false },
+            accent: '#ffcc33',
 
             init() {
                 const p = document.getElementById('sys-pass').value;
-                if(p === "masononly69") { this.rank = "OWNER"; document.getElementById('owner-icon').classList.remove('hidden'); this.boot(); }
-                else if(p === "honey") { this.rank = "MEMBER"; this.boot(); }
-                else { alert("WRONG PASSWORD"); }
+                if(p === "masononly69" || p === "honey") {
+                    if(p === "masononly69") document.getElementById('owner-icon').classList.remove('hidden');
+                    document.getElementById('auth-overlay').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('auth-overlay').classList.add('hidden');
+                        document.getElementById('desktop').style.display = 'block';
+                        this.boot();
+                    }, 1000);
+                } else { alert("ACCESS DENIED"); }
             },
 
             boot() {
-                document.getElementById('auth-overlay').style.display = "none";
-                document.getElementById('desktop').style.display = "block";
-                this.initEngine();
-            },
+                this.canvas = document.getElementById('bg-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
 
-            toggle(m) {
-                this.mods[m] = !this.mods[m];
-                document.getElementById('m-'+m)?.classList.toggle('active');
-            },
+                // Mouse/Touch Events
+                const updateMouse = (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    this.mouse.x = (e.clientX || e.touches?.[0].clientX) - rect.left;
+                    this.mouse.y = (e.clientY || e.touches?.[0].clientY) - rect.top;
+                };
 
-            addOrb(x, y) {
-                const c = document.getElementById('bg-canvas');
-                this.orbs.push({
-                    x: x || Math.random() * c.width,
-                    y: y || Math.random() * c.height,
-                    r: Math.random() * 20 + this.baseRadius,
-                    vx: (Math.random() - 0.5) * 5, vy: (Math.random() - 0.5) * 5,
-                    hue: Math.random() * 360
-                });
-            },
+                window.addEventListener('mousemove', updateMouse);
+                window.addEventListener('mousedown', (e) => { this.mouse.active = true; updateMouse(e); this.checkPop(); });
+                window.addEventListener('mouseup', () => { this.mouse.active = false; });
+                window.addEventListener('touchstart', (e) => { this.mouse.active = true; updateMouse(e); this.checkPop(); });
+                window.addEventListener('touchend', () => { this.mouse.active = false; });
 
-            chaosBurst() { for(let i=0; i<10; i++) this.addOrb(); },
+                // Keyboard
+                window.addEventListener('keydown', (e) => { if(e.key.toLowerCase() === 'h') this.spawnSwarm(); });
 
-            spawn(type) {
-                const id = 'w-' + Math.random().toString(36).substr(2, 5);
-                const win = document.createElement('div');
-                win.className = 'window'; win.id = id; win.style.width = "300px"; win.style.left = "40%"; win.style.top = "25%";
+                // Initial Spawn
+                for(let i=0; i<15; i++) this.orbs.push(new Bubble(this));
                 
-                let body = '';
-                if(type === 'settings') {
-                    body = `
-                        <div class="setting-row"><span>Boundary Force</span><input type="range" min="20" max="300" value="${this.boundary}" oninput="Mansion.boundary=this.value"></div>
-                        <div class="setting-row"><span>Default Size</span><input type="range" min="5" max="120" value="${this.baseRadius}" oninput="Mansion.baseRadius=parseInt(this.value)"></div>
-                    `;
-                } else if(type === 'themes') {
-                    body = `<div style="padding:15px;">${this.themes.map(t=>`<button class="option-btn" onclick="Mansion.setTheme('${t.n}')">${t.n}</button>`).join('')}</div>`;
-                } else if(type === 'games') {
-                    body = `<div style="padding:20px;"><button class="option-btn active" style="text-align:center" onclick="Mansion.play()">Launch Gladihoppers</button></div>`;
-                } else if(type === 'owner') {
-                    body = `<div style="padding:20px;"><h3>God Panel</h3><button class="option-btn" onclick="Mansion.orbs=[]">Nuclear Purge</button></div>`;
-                }
-
-                win.innerHTML = `<div class="win-header" onmousedown="Mansion.drag(event, '${id}')"><span class="win-title">${type}</span><span class="win-close" onclick="this.parentElement.parentElement.remove()">×</span></div><div>${body}</div>`;
-                document.getElementById('win-layer').appendChild(win);
+                this.animate();
             },
 
-            setTheme(n) {
-                const t = this.themes.find(x=>x.n===n);
-                document.documentElement.style.setProperty('--accent', t.a);
-                document.documentElement.style.setProperty('--glow', t.g);
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
             },
 
-            play() {
-                const win = document.createElement('div');
-                win.className = 'window'; win.style.width="85%"; win.style.height="80%"; win.style.left="7.5%"; win.style.top="10%";
-                win.innerHTML = `<div class="win-header"><span>GLADIHOPPERS</span><span class="win-close" onclick="this.parentElement.parentElement.remove()">×</span></div><iframe src="https://xfrapo.github.io/projectroyal/projects/gladihoppers/index.html"></iframe>`;
-                document.getElementById('win-layer').appendChild(win);
+            toggle(mod) {
+                this.mods[mod] = !this.mods[mod];
+                document.getElementById('m-'+mod)?.classList.toggle('active');
             },
 
-            drag(e, id) {
-                const el = document.getElementById(id);
-                let ox = e.clientX - el.offsetLeft, oy = e.clientY - el.offsetTop;
-                const mm = (e) => { el.style.left = (e.clientX-ox)+"px"; el.style.top = (e.clientY-oy)+"px"; };
-                const mu = () => { window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
-                window.addEventListener('mousemove', mm); window.addEventListener('mouseup', mu);
+            spawnSwarm() {
+                for(let i=0; i<10; i++) this.orbs.push(new Bubble(this));
             },
 
-            initEngine() {
-                const c = document.getElementById('bg-canvas');
-                const ctx = c.getContext('2d');
-                let mouse = { x: -1000, y: -1000 };
+            clearOrbs() { this.orbs = []; },
 
-                window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
-                window.addEventListener('mousedown', (e) => {
-                    this.isMouseDown = true;
-                    this.orbs = this.orbs.filter(o => Math.sqrt((o.x-e.clientX)**2 + (o.y-e.clientY)**2) > o.r);
+            checkPop() {
+                this.orbs = this.orbs.filter(orb => {
+                    const dist = Math.hypot(this.mouse.x - orb.x, this.mouse.y - orb.y);
+                    return dist > orb.r; // Remove if clicked inside
                 });
-                window.addEventListener('mouseup', () => this.isMouseDown = false);
-                window.addEventListener('keydown', e => { 
-                    if(e.key.toLowerCase() === 'h') this.chaosBurst();
-                    if(this.rank === "OWNER") {
-                        if(e.key.toLowerCase() === 'f') this.freeze = !this.freeze;
-                        if(e.key.toLowerCase() === 'b') this.blackhole = !this.blackhole;
+            },
+
+            animate() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.orbs.forEach((orb, i) => {
+                    orb.update();
+                    orb.draw();
+                    
+                    // Collision Check (Physics)
+                    if(this.mods.bounce) {
+                        for(let j = i + 1; j < this.orbs.length; j++) {
+                            const other = this.orbs[j];
+                            const dx = other.x - orb.x;
+                            const dy = other.y - orb.y;
+                            const distance = Math.hypot(dx, dy);
+                            const minDistance = orb.r + other.r;
+
+                            if (distance < minDistance) {
+                                // Resolve Overlap
+                                const overlap = minDistance - distance;
+                                const nx = dx / distance;
+                                const ny = dy / distance;
+                                orb.x -= nx * overlap / 2;
+                                orb.y -= ny * overlap / 2;
+                                other.x += nx * overlap / 2;
+                                other.y += ny * overlap / 2;
+
+                                // Elastic collision velocity swap
+                                const p = 2 * (orb.vx * nx + orb.vy * ny - other.vx * nx - other.vy * ny) / (orb.r + other.r);
+                                orb.vx -= p * other.r * nx;
+                                orb.vy -= p * other.r * ny;
+                                other.vx += p * orb.r * nx;
+                                other.vy += p * orb.r * ny;
+                            }
+                        }
                     }
                 });
 
-                const resize = () => { c.width = window.innerWidth; c.height = window.innerHeight; };
-                window.onresize = resize; resize();
-                for(let i=0; i<40; i++) this.addOrb();
-
-                const draw = () => {
-                    ctx.fillStyle = this.mods.trails ? "rgba(5,4,0,0.15)" : getComputedStyle(document.documentElement).getPropertyValue('--bg');
-                    ctx.fillRect(0,0,c.width,c.height);
-
-                    this.orbs.forEach((o, i) => {
-                        if(!this.freeze) {
-                            let dx = o.x - mouse.x, dy = o.y - mouse.y;
-                            let dist = Math.sqrt(dx*dx + dy*dy);
-                            
-                            if(dist < this.boundary) {
-                                let f = (this.boundary - dist) / this.boundary;
-                                let m = (this.isMouseDown || this.blackhole) ? -10 : 6;
-                                o.vx += (dx/dist) * f * m; o.vy += (dy/dist) * f * m;
-                            }
-
-                            if(this.mods.speed) { o.vx *= 1.08; o.vy *= 1.08; }
-                            if(this.mods.magnet) {
-                                this.orbs.forEach((o2, j) => { if(i!==j){ let d2x=o2.x-o.x, d2y=o2.y-o.y; let d2=Math.sqrt(d2x*d2x+d2y*d2y); if(d2<100){o.vx+=d2x*0.004; o.vy+=d2y*0.004;}}});
-                            }
-
-                            o.vx *= 0.95; o.vy *= 0.95;
-                            o.x += o.vx; o.y += o.vy;
-
-                            if(o.x<0 || o.x>c.width) o.vx *= -1;
-                            if(o.y<0 || o.y>c.height) o.vy *= -1;
-                        }
-
-                        if(this.mods.vibrate) { o.x += (Math.random()-0.5)*8; o.y += (Math.random()-0.5)*8; }
-                        if(this.mods.rgb) { o.hue = (o.hue + 3) % 360; }
-                        
-                        let r = o.r;
-                        let g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, r);
-                        let baseColor = this.mods.rgb ? `hsla(${o.hue}, 80%, 60%, 0.4)` : getComputedStyle(document.documentElement).getPropertyValue('--glow');
-                        
-                        g.addColorStop(0, this.mods.shadow ? "rgba(0,0,0,1)" : baseColor);
-                        g.addColorStop(1, "transparent");
-                        
-                        ctx.globalCompositeOperation = "source-over"; // Softer blending
-                        ctx.fillStyle = g;
-                        ctx.beginPath(); ctx.arc(o.x, o.y, r, 0, Math.PI*2); ctx.fill();
-                    });
-                    requestAnimationFrame(draw);
-                };
-                draw();
+                requestAnimationFrame(() => this.animate());
             }
         };
+
+        class Bubble {
+            constructor(parent) {
+                this.p = parent;
+                this.r = Math.random() * 30 + 15;
+                this.x = Math.random() * (this.p.canvas.width - this.r * 2) + this.r;
+                this.y = Math.random() * (this.p.canvas.height - this.r * 2) + this.r;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.hue = Math.random() * 40 + 35; // Honey range
+            }
+
+            update() {
+                // Apply Float (Anti-gravity)
+                if(this.p.mods.float) this.vy -= 0.1;
+                else this.vy += 0.02; // Slight gravity
+
+                // Movement
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Friction
+                this.vx *= 0.99;
+                this.vy *= 0.99;
+
+                // Mouse Magnetism/Repulsion
+                const dx = this.p.mouse.x - this.x;
+                const dy = this.p.mouse.y - this.y;
+                const dist = Math.hypot(dx, dy);
+                if(dist < 250) {
+                    const force = (250 - dist) / 250;
+                    if(this.p.mods.magnet) {
+                        this.vx += (dx / dist) * force * 0.5;
+                        this.vy += (dy / dist) * force * 0.5;
+                    } else {
+                        // Default Repulsion
+                        this.vx -= (dx / dist) * force * 0.4;
+                        this.vy -= (dy / dist) * force * 0.4;
+                    }
+                }
+
+                // Wall Bounce
+                if(this.x + this.r > this.p.canvas.width) { this.x = this.p.canvas.width - this.r; this.vx *= -0.8; }
+                if(this.x - this.r < 0) { this.x = this.r; this.vx *= -0.8; }
+                if(this.y + this.r > this.p.canvas.height) { this.y = this.p.canvas.height - this.r; this.vy *= -0.8; }
+                if(this.y - this.r < 0) { this.y = this.r; this.vy *= -0.8; }
+            }
+
+            draw() {
+                const ctx = this.p.ctx;
+                const color = this.p.mods.rgb ? `hsla(${Date.now()/10 % 360}, 70%, 60%, 0.4)` : `rgba(255, 204, 51, 0.3)`;
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                
+                // Bubble Gradient
+                const grad = ctx.createRadialGradient(this.x - this.r/3, this.y - this.r/3, this.r/10, this.x, this.y, this.r);
+                grad.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+                grad.addColorStop(0.4, color);
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0.1)');
+                
+                ctx.fillStyle = grad;
+                ctx.fill();
+                
+                // Border
+                ctx.strokeStyle = this.p.mods.rgb ? `hsla(${Date.now()/10 % 360}, 70%, 60%, 0.8)` : 'rgba(255, 204, 51, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Shimmer
+                ctx.beginPath();
+                ctx.arc(this.x - this.r*0.4, this.y - this.r*0.4, this.r*0.15, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fill();
+            }
+        }
     </script>
 </body>
 </html>
