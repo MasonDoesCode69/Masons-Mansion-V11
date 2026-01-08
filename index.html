@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mason’s Mansion | V8 Supernova</title>
+    <style>
+        /* MASON'S MANSION V8 - THE SUPERNOVA UPDATE
+           Focus: High Vibrancy, Floating Orbs, Theme Restoration
+        */
+        :root {
+            --bg: #020205;
+            --accent: #00f2ff;
+            --glow: rgba(0, 242, 255, 0.6);
+            --glass: rgba(10, 10, 15, 0.85);
+            --border: rgba(255, 255, 255, 0.15);
+            --text: #ffffff;
+            --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --underglow: 0 0 30px var(--glow);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body, html { 
+            width: 100%; height: 100%; overflow: hidden; 
+            background: var(--bg); color: var(--text); 
+            font-family: var(--font); cursor: crosshair;
+        }
+
+        /* --- VIBRANT FLOATING ORBS --- */
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* --- TOP LEFT AUTH --- */
+        #auth-anchor {
+            position: fixed; top: 20px; left: 20px; z-index: 10000;
+            display: flex; gap: 10px; background: var(--glass);
+            padding: 12px; border-radius: 14px; border: 1px solid var(--border);
+            backdrop-filter: blur(20px); box-shadow: var(--underglow);
+        }
+        #auth-anchor input {
+            background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+            color: #fff; padding: 8px 12px; border-radius: 8px; width: 140px;
+        }
+        #auth-anchor button {
+            background: var(--accent); color: #000; border: none;
+            padding: 8px 15px; border-radius: 8px; font-weight: 900; cursor: pointer;
+            text-transform: uppercase; transition: 0.3s;
+        }
+        #auth-anchor button:hover { transform: scale(1.05); filter: brightness(1.2); }
+
+        /* --- DESKTOP --- */
+        #desktop { position: relative; width: 100vw; height: 100vh; z-index: 10; display: none; }
+
+        /* --- WINDOWS --- */
+        .window {
+            position: absolute; background: var(--glass);
+            border: 1px solid var(--border); border-radius: 20px;
+            backdrop-filter: blur(30px); display: flex; flex-direction: column;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7), var(--underglow);
+            overflow: hidden; animation: winShow 0.4s ease-out;
+        }
+        @keyframes winShow { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        .win-header {
+            padding: 14px 20px; background: rgba(255,255,255,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: move; border-bottom: 1px solid var(--border);
+        }
+        .win-title { font-size: 11px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; }
+        .win-close { width: 12px; height: 12px; background: #ff5f56; border-radius: 50%; cursor: pointer; box-shadow: 0 0 10px #ff5f56; }
+
+        /* --- TERMINAL --- */
+        .terminal-box { padding: 15px; height: 280px; background: #000; font-family: 'Consolas', monospace; }
+        .term-log { height: 210px; overflow-y: auto; font-size: 13px; color: var(--accent); margin-bottom: 10px; }
+        .term-input-line { display: flex; gap: 8px; align-items: center; color: var(--accent); }
+        #term-prompt { background: transparent; border: none; color: #fff; flex: 1; font-family: 'Consolas', monospace; font-size: 14px; }
+
+        /* --- THEME ENGINE --- */
+        .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+        .theme-card {
+            padding: 15px; border-radius: 12px; border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03); color: #fff; cursor: pointer;
+            font-size: 12px; font-weight: 800; text-align: center; transition: 0.3s;
+        }
+        .theme-card:hover { background: var(--accent); color: #000; transform: translateY(-3px); }
+
+        /* --- MASON'S ROOM OF GAMES --- */
+        .game-area { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; padding: 25px; }
+        .game-item {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+            border-radius: 15px; padding: 20px; text-align: center; cursor: pointer;
+            transition: 0.4s;
+        }
+        .game-item:hover { 
+            border-color: var(--accent); background: rgba(255,255,255,0.08); 
+            transform: scale(1.05); box-shadow: 0 0 20px var(--glow);
+        }
+        .game-item i { font-size: 35px; display: block; margin-bottom: 10px; }
+
+        /* --- OWNER PANEL --- */
+        .owner-control { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .owner-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; }
+
+        /* --- TASKBAR --- */
+        #taskbar {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 12px 25px; border-radius: 25px; display: flex; gap: 20px;
+            backdrop-filter: blur(25px); z-index: 1000; box-shadow: var(--underglow);
+        }
+        .t-icon {
+            width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.04); border-radius: 15px; cursor: pointer;
+            font-size: 26px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .t-icon:hover { transform: translateY(-15px) scale(1.2); background: var(--accent); color: #000; box-shadow: 0 10px 20px var(--glow); }
+
+        /* --- VIP RGB EFFECT --- */
+        .vip-chroma { animation: chroma-loop 3s infinite linear !important; border-width: 2px !important; }
+        @keyframes chroma-loop {
+            0% { border-color: #ff0000; box-shadow: 0 0 25px #ff0000; }
+            33% { border-color: #00ff00; box-shadow: 0 0 25px #00ff00; }
+            66% { border-color: #0000ff; box-shadow: 0 0 25px #0000ff; }
+            100% { border-color: #ff0000; box-shadow: 0 0 25px #ff0000; }
+        }
+
+        iframe { width: 100%; flex: 1; border: none; background: #000; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="auth-anchor">
+        <input type="password" id="sys-pass" placeholder="KEY CODE">
+        <button onclick="Mansion.init()">Initialize</button>
+    </div>
+
+    <div id="desktop">
+        <div id="win-layer"></div>
+
+        <div id="taskbar">
+            <div class="t-icon" title="Mason's Room of Games" onclick="Mansion.spawn('games')">🎮</div>
+            <div class="t-icon" title="Terminal" onclick="Mansion.spawn('terminal')">📟</div>
+            <div class="t-icon" title="Themes" onclick="Mansion.spawn('themes')">🎨</div>
+            <div id="owner-icon" class="t-icon hidden" title="Owner Panel" onclick="Mansion.spawn('owner')">👑</div>
+            <div class="t-icon" title="Emergency" onclick="Mansion.panic()">🛑</div>
+        </div>
+    </div>
+
+    <script>
+        const Mansion = {
+            rank: 'guest',
+            zIndex: 100,
+            isVip: false,
+            themes: [
+                { n: 'Supernova (Cyan)', a: '#00f2ff', g: 'rgba(0, 242, 255, 0.6)' },
+                { n: 'Hellfire (Red)', a: '#ff3c00', g: 'rgba(255, 60, 0, 0.6)' },
+                { n: 'Emerald (Green)', a: '#00ff88', g: 'rgba(0, 255, 136, 0.6)' },
+                { n: 'Void (Purple)', a: '#bf00ff', g: 'rgba(191, 0, 255, 0.6)' },
+                { n: 'Venom (Lime)', a: '#a2ff00', g: 'rgba(162, 255, 0, 0.6)' },
+                { n: 'Barbie (Pink)', a: '#ff00ea', g: 'rgba(255, 0, 234, 0.6)' }
+            ],
+
+            init() {
+                const p = document.getElementById('sys-pass').value;
+                if(p === "masononly69") {
+                    this.rank = "OWNER";
+                    document.getElementById('owner-icon').classList.remove('hidden');
+                    this.boot();
+                } else if(p === "Honey") {
+                    this.rank = "MEMBER";
+                    this.boot();
+                } else { alert("ACCESS DENIED"); }
+            },
+
+            boot() {
+                document.getElementById('auth-anchor').style.transform = "translateX(-500px)";
+                document.getElementById('desktop').style.display = "block";
+                this.initOrbs();
+                this.spawn('games');
+            },
+
+            spawn(type) {
+                const id = 'w-' + Math.random().toString(36).substr(2, 5);
+                const win = document.createElement('div');
+                win.className = 'window';
+                if(this.isVip) win.classList.add('vip-chroma');
+                win.id = id;
+                win.style.width = "550px"; win.style.height = "400px";
+                win.style.left = "25%"; win.style.top = "20%";
+                win.style.zIndex = ++this.zIndex;
+
+                let body = '';
+                if(type === 'games') {
+                    body = `<div class="win-title" style="padding:15px 0 0 25px;">Mason’s Room of Games</div>
+                            <div class="game-area">
+                                <div class="game-item" onclick="Mansion.play('https://xfrapo.github.io/projectroyal/projects/gladihoppers/index.html', 'Gladihoppers')">
+                                    <i>⚔️</i><span>Gladihoppers</span>
+                                </div>
+                            </div>`;
+                } else if(type === 'terminal') {
+                    body = `<div class="terminal-box" onclick="document.getElementById('term-prompt').focus()">
+                                <div class="term-log" id="t-log">Mansion Kernel v8.0.0...<br>Enter credentials or 'help'.</div>
+                                <div class="term-input-line"><span>></span><input id="term-prompt" onkeydown="Mansion.term(event)"></div>
+                            </div>`;
+                } else if(type === 'themes') {
+                    body = `<div class="theme-grid">` + this.themes.map(t => `
+                        <div class="theme-card" onclick="Mansion.setTheme('${t.n}')">${t.n}</div>`).join('') + `</div>`;
+                } else if(type === 'owner') {
+                    body = `<div class="owner-control">
+                        <div class="owner-row"><span>Site-Wide RGB</span><button class="theme-card" onclick="Mansion.isVip=true">Enable</button></div>
+                        <div class="owner-row"><span>Orb Density</span><button class="theme-card" onclick="location.reload()">Reset</button></div>
+                        <div class="owner-row"><span>Force Cloak</span><button class="theme-card" onclick="Mansion.panic()">Execute</button></div>
+                    </div>`;
+                }
+
+                win.innerHTML = `
+                    <div class="win-header" onmousedown="Mansion.drag(event, '${id}')">
+                        <div class="win-title">${type}</div>
+                        <div class="win-close" onclick="document.getElementById('${id}').remove()"></div>
+                    </div>
+                    ${body}`;
+                document.getElementById('win-layer').appendChild(win);
+            },
+
+            term(e) {
+                if(e.key === 'Enter') {
+                    const cmd = e.target.value.toLowerCase();
+                    const log = document.getElementById('t-log');
+                    if(cmd === 'vip67') {
+                        this.isVip = true;
+                        log.innerHTML += `<br><span style="color:#00ff00">ACCESS GRANTED. VIP CHROMA ENABLED.</span>`;
+                        document.querySelectorAll('.window').forEach(w => w.classList.add('vip-chroma'));
+                    } else if(cmd === 'help') {
+                        log.innerHTML += `<br>Available: help, clear, vip67, reboot`;
+                    } else if(cmd === 'clear') { log.innerHTML = 'Terminal reset.'; }
+                    else { log.innerHTML += `<br>Invalid: ${cmd}`; }
+                    e.target.value = '';
+                    log.scrollTop = log.scrollHeight;
+                }
+            },
+
+            setTheme(name) {
+                const t = this.themes.find(x => x.n === name);
+                const r = document.documentElement;
+                r.style.setProperty('--accent', t.a);
+                r.style.setProperty('--glow', t.g);
+                r.style.setProperty('--underglow', `0 0 30px ${t.g}`);
+            },
+
+            play(url, name) {
+                const id = 'p-' + Date.now();
+                const win = document.createElement('div');
+                win.className = 'window';
+                if(this.isVip) win.classList.add('vip-chroma');
+                win.id = id; win.style.width = "80%"; win.style.height = "85%";
+                win.style.left = "10%"; win.style.top = "7.5%";
+                win.style.zIndex = ++this.zIndex;
+                win.innerHTML = `
+                    <div class="win-header" onmousedown="Mansion.drag(event, '${id}')">
+                        <div class="win-title">ROOM_GAMES: ${name}</div>
+                        <div class="win-close" onclick="document.getElementById('${id}').remove()"></div>
+                    </div>
+                    <iframe src="${url}"></iframe>`;
+                document.getElementById('win-layer').appendChild(win);
+            },
+
+            drag(e, id) {
+                const el = document.getElementById(id);
+                el.style.zIndex = ++this.zIndex;
+                let ox = e.clientX - el.offsetLeft, oy = e.clientY - el.offsetTop;
+                const mm = (e) => { el.style.left = (e.clientX - ox) + "px"; el.style.top = (e.clientY - oy) + "px"; };
+                const mu = () => { window.removeEventListener('mousemove', mm); window.removeEventListener('mouseup', mu); };
+                window.addEventListener('mousemove', mm);
+                window.addEventListener('mouseup', mu);
+            },
+
+            panic() { window.location.replace("https://www.google.com/search?q=educational+science+simulations"); },
+
+            initOrbs() {
+                const c = document.getElementById('bg-canvas');
+                const ctx = c.getContext('2d');
+                let orbs = [];
+                const resize = () => { c.width = window.innerWidth; c.height = window.innerHeight; };
+                window.onresize = resize; resize();
+
+                for(let i=0; i<40; i++) {
+                    orbs.push({
+                        x: Math.random()*c.width, y: Math.random()*c.height,
+                        r: Math.random()*100 + 50,
+                        vx: (Math.random()-0.5)*0.8, vy: (Math.random()-0.5)*0.8
+                    });
+                }
+
+                const draw = () => {
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg');
+                    ctx.fillRect(0,0,c.width,c.height);
+                    orbs.forEach(o => {
+                        o.x += o.vx; o.y += o.vy;
+                        if(o.x<0||o.x>c.width) o.vx *= -1;
+                        if(o.y<0||o.y>c.height) o.vy *= -1;
+                        let grad = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+                        grad.addColorStop(0, getComputedStyle(document.documentElement).getPropertyValue('--glow'));
+                        grad.addColorStop(1, 'transparent');
+                        ctx.fillStyle = grad;
+                        ctx.beginPath(); ctx.arc(o.x, o.y, o.r, 0, Math.PI*2); ctx.fill();
+                    });
+                    requestAnimationFrame(draw);
+                };
+                draw();
+            }
+        };
+    </script>
+</body>
+</html>
