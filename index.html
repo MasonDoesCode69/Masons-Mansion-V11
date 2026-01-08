@@ -3,296 +3,380 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mason’s Mansion | V16 Refined</title>
+    <title>Mason’s Mansion | V16 Absolute Omega</title>
+    <link href="fonts.googleapis.com" rel="stylesheet">
     <style>
         :root {
-            --bg: #050400;
+            --bg: #020204;
             --accent: #ffcc33;
             --glow: rgba(255, 204, 51, 0.3);
-            --glass: rgba(15, 15, 15, 0.95);
-            --border: rgba(255, 255, 255, 0.08);
+            --glass: rgba(8, 8, 12, 0.96);
+            --border: rgba(255, 255, 255, 0.07);
             --text: #ffffff;
-            --font: 'Segoe UI', system-ui, sans-serif;
+            --font-main: 'Orbitron', sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; -webkit-tap-highlight-color: transparent; }
-        body, html { 
-            width: 100%; height: 100%; overflow: hidden; 
-            background: var(--bg); color: var(--text); 
-            font-family: var(--font); cursor: crosshair; touch-action: none;
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body, html { width: 100%; height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font-main); cursor: crosshair; }
+
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; }
+
+        /* --- CHRONOS CLOCK --- */
+        #chronos {
+            position: fixed; top: 30px; right: 40px; text-align: right; z-index: 1000;
+            pointer-events: none; transition: 0.5s;
         }
+        #time-digit { font-size: 48px; font-weight: 900; color: var(--accent); letter-spacing: 6px; text-shadow: 0 0 20px var(--glow); }
+        #date-digit { font-size: 11px; opacity: 0.5; letter-spacing: 4px; text-transform: uppercase; font-family: var(--font-mono); }
 
-        #bg-canvas { position: fixed; inset: 0; z-index: 0; transition: filter 0.5s; }
-
-        /* --- AUTH --- */
+        /* --- AUTHENTICATION --- */
         #auth-overlay {
-            position: fixed; inset: 0; z-index: 10000;
-            display: flex; align-items: center; justify-content: center;
-            background: #000; transition: 1.2s cubic-bezier(0.7, 0, 0.3, 1);
+            position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center;
+            background: #000; transition: 1.5s cubic-bezier(0.8, 0, 0.2, 1);
         }
-        .login-card { background: var(--glass); padding: 40px; border-radius: 30px; border: 1px solid var(--accent); text-align: center; width: 350px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
-        .login-card h1 { color: var(--accent); letter-spacing: 8px; margin-bottom: 5px; font-size: 28px; text-shadow: 0 0 10px var(--glow); }
-        .login-card input { width: 100%; background: #111; border: 1px solid var(--border); padding: 15px; border-radius: 12px; color: #fff; margin-bottom: 15px; text-align: center; font-weight: bold; letter-spacing: 2px; }
-        .login-card button { width: 100%; padding: 15px; border-radius: 12px; border: none; background: var(--accent); color: #000; font-weight: 900; cursor: pointer; transition: 0.3s; }
-        .login-card button:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--accent); }
+        .login-card {
+            background: var(--glass); padding: 60px; border-radius: 5px; border-left: 5px solid var(--accent);
+            width: 450px; box-shadow: 0 0 100px rgba(0,0,0,1); text-align: center;
+        }
+        .login-card h1 { font-size: 34px; letter-spacing: 15px; margin-bottom: 30px; color: var(--accent); }
+        .login-card input {
+            width: 100%; background: #080808; border: 1px solid var(--border); padding: 18px; 
+            color: #fff; margin-bottom: 15px; text-align: center; font-family: var(--font-mono); font-size: 14px;
+        }
+        .login-card button {
+            width: 100%; padding: 18px; background: var(--accent); color: #000; font-weight: 900;
+            border: none; cursor: pointer; transition: 0.3s; letter-spacing: 5px;
+        }
+        .login-card button:hover { letter-spacing: 10px; background: #fff; box-shadow: 0 0 30px #fff; }
 
-        /* --- SIDEBAR --- */
+        /* --- SIDEBAR SYSTEM --- */
         #sidebar {
-            position: fixed; left: -250px; top: 50%; transform: translateY(-50%);
-            width: 250px; background: var(--glass); border: 1px solid var(--border);
-            padding: 20px; border-radius: 0 25px 25px 0; z-index: 2000;
-            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: fixed; left: -320px; top: 0; bottom: 0; width: 320px;
+            background: var(--glass); border-right: 1px solid var(--border); padding: 40px 25px;
+            z-index: 2000; transition: 0.6s cubic-bezier(0.19, 1, 0.22, 1); backdrop-filter: blur(25px);
         }
-        #sidebar.open { left: 0; border-right: 3px solid var(--accent); box-shadow: 20px 0 50px rgba(0,0,0,0.5); }
+        #sidebar.open { left: 0; box-shadow: 30px 0 100px rgba(0,0,0,0.8); }
         #sidebar-tab {
-            position: absolute; right: -45px; top: 50%; transform: translateY(-50%);
-            background: var(--accent); color: #000; padding: 15px 10px;
-            border-radius: 0 12px 12px 0; cursor: pointer; font-weight: 900; writing-mode: vertical-rl; font-size: 11px; letter-spacing: 2px;
+            position: absolute; right: -40px; top: 50%; height: 180px; width: 40px;
+            background: var(--accent); color: #000; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-weight: 900; writing-mode: vertical-rl; letter-spacing: 5px; font-size: 12px;
         }
 
-        .option-btn { width: 100%; padding: 12px; margin: 5px 0; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #fff; border-radius: 10px; font-size: 11px; cursor: pointer; text-align: left; transition: 0.2s; }
-        .option-btn:hover { background: rgba(255,255,255,0.1); border-color: var(--accent); }
-        .option-btn.active { background: var(--accent); color: #000; font-weight: bold; }
+        .label { font-size: 9px; color: var(--accent); letter-spacing: 4px; margin: 25px 0 10px; opacity: 0.6; text-transform: uppercase; }
+        .ctrl-btn {
+            width: 100%; padding: 12px; margin: 4px 0; background: rgba(255,255,255,0.03); 
+            border: 1px solid var(--border); color: #fff; cursor: pointer; text-align: left; 
+            font-size: 10px; font-family: var(--font-mono); transition: 0.2s;
+        }
+        .ctrl-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent); padding-left: 20px; }
+        .ctrl-btn.active { background: var(--accent); color: #000; font-weight: 900; border-color: #fff; }
 
-        /* --- WINDOWS --- */
+        /* --- DESKTOP WINDOWS --- */
         #desktop { position: relative; width: 100vw; height: 100vh; z-index: 10; display: none; }
-        .window { 
-            position: absolute; background: var(--glass); border: 1px solid var(--border); 
-            border-radius: 20px; backdrop-filter: blur(20px); overflow: hidden; 
-            display: flex; flex-direction: column; min-width: 300px; min-height: 200px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); z-index: 50;
+        .window {
+            position: absolute; background: var(--glass); border: 1px solid var(--border);
+            width: 950px; height: 600px; display: none; flex-direction: column;
+            box-shadow: 0 40px 120px rgba(0,0,0,0.9); z-index: 500; border-radius: 4px;
         }
-        .win-header { padding: 12px 20px; background: rgba(255,255,255,0.05); cursor: move; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .win-title { font-size: 12px; font-weight: 900; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; }
-        .win-close { cursor: pointer; color: #ff5f56; font-size: 20px; font-weight: bold; }
-        .win-content { flex: 1; padding: 15px; overflow-y: auto; color: #ccc; }
+        .win-head {
+            padding: 15px 25px; background: rgba(255,255,255,0.04); display: flex; 
+            justify-content: space-between; cursor: move; border-bottom: 1px solid var(--border);
+            font-size: 11px; letter-spacing: 3px; font-weight: 900; color: var(--accent);
+        }
+        .win-body { flex: 1; overflow: hidden; background: #000; position: relative; }
 
-        /* --- DASHBOARD GRID --- */
-        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .theme-card { padding: 15px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; text-align: center; transition: 0.3s; background: rgba(0,0,0,0.3); }
-        .theme-card:hover { border-color: var(--accent); transform: translateY(-3px); }
-        
-        #taskbar { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: var(--glass); border: 1px solid var(--border); padding: 12px 25px; border-radius: 25px; display: flex; gap: 20px; z-index: 1000; }
-        .t-icon { width: 55px; height: 55px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); border-radius: 18px; cursor: pointer; font-size: 26px; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid transparent; }
-        .t-icon:hover { transform: translateY(-12px) scale(1.1); background: var(--accent); color: #000; box-shadow: 0 10px 20px var(--glow); }
+        /* --- DASHBOARD GRIDS --- */
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 20px; }
+        .card {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 20px;
+            text-align: center; cursor: pointer; transition: 0.3s;
+        }
+        .card:hover { border-color: var(--accent); transform: translateY(-5px); background: rgba(255,255,255,0.05); }
+        .card i { font-size: 24px; display: block; margin-bottom: 10px; }
 
-        iframe { width: 100%; height: 100%; border: none; border-radius: 0 0 20px 20px; }
+        /* --- TASKBAR --- */
+        #taskbar {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: var(--glass); border: 1px solid var(--border); padding: 12px 35px;
+            border-radius: 100px; display: flex; gap: 25px; z-index: 1000; backdrop-filter: blur(15px);
+        }
+        .t-icon {
+            width: 55px; height: 55px; display: flex; align-items: center; justify-content: center;
+            font-size: 28px; cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 50%; border: 1px solid transparent;
+        }
+        .t-icon:hover { transform: translateY(-20px) scale(1.2); border-color: var(--accent); box-shadow: 0 10px 30px var(--glow); }
+
+        iframe { width: 100%; height: 100%; border: none; }
         .hidden { display: none !important; }
-        .owner-badge { background: var(--accent); color: #000; padding: 2px 8px; border-radius: 5px; font-size: 9px; font-weight: 900; vertical-align: middle; }
+        .vip-txt { color: #00f2ff; text-shadow: 0 0 10px rgba(0, 242, 255, 0.5); }
+        .owner-txt { color: #ff3333; text-shadow: 0 0 10px rgba(255, 51, 51, 0.5); }
     </style>
 </head>
 <body>
 
     <canvas id="bg-canvas"></canvas>
 
+    <div id="chronos">
+        <div id="time-digit">00:00:00</div>
+        <div id="date-digit">INITIALIZING_CHRONOS</div>
+    </div>
+
     <div id="auth-overlay">
         <div class="login-card">
             <h1>MASON V16</h1>
-            <p style="font-size: 10px; opacity: 0.5; margin-bottom: 20px; letter-spacing: 3px;">SYSTEM ACCESS REQUIRED</p>
-            <input type="password" id="sys-pass" placeholder="ACCESS KEY">
-            <button onclick="Mansion.init()">INITIALIZE</button>
+            <input type="password" id="sys-pass" placeholder="ENTER ACCESS KEY">
+            <button onclick="Mansion.init()">LOGIN</button>
+            <p style="font-size: 8px; margin-top: 20px; opacity: 0.3; letter-spacing: 2px;">SECURED BY HONEY_ARCHITECTURE_2026</p>
         </div>
     </div>
 
     <div id="desktop">
         <div id="sidebar">
-            <div id="sidebar-tab" onclick="document.getElementById('sidebar').classList.toggle('open')">MADNESS CONTROLS</div>
-            <button class="option-btn" onclick="Mansion.chaosBurst()">Spawn Swarm</button>
-            <button class="option-btn active" id="m-float" onclick="Mansion.toggle('float')">Orb Drift</button>
-            <button class="option-btn" id="m-rgb" onclick="Mansion.toggle('rgb')">RGB Cycle</button>
-            <button class="option-btn" id="m-pulse" onclick="Mansion.toggle('pulse')">Size Pulse</button>
-            <button class="option-btn" id="m-magnet" onclick="Mansion.toggle('magnet')">Magnetism</button>
-            <button class="option-btn" id="m-trails" onclick="Mansion.toggle('trails')">Ghost Trails</button>
-            <button class="option-btn" id="m-speed" onclick="Mansion.toggle('speed')">Warp Drive</button>
-            <button class="option-btn" onclick="Mansion.clearOrbs()" style="color:#ff5f56">Clear Canvas</button>
+            <div id="sidebar-tab" onclick="document.getElementById('sidebar').classList.toggle('open')">TERMINAL</div>
+            
+            <div class="label">Physics Engine</div>
+            <button class="ctrl-btn active" id="m-float" onclick="Mansion.toggle('float')">Galactic Drift [ON]</button>
+            <button class="ctrl-btn" id="m-rgb" onclick="Mansion.toggle('rgb')">Neural Pulse [OFF]</button>
+            <button class="ctrl-btn" id="m-magnet" onclick="Mansion.toggle('magnet')">Gravity Well [OFF]</button>
+            
+            <div class="label">Geometry Mod</div>
+            <button class="ctrl-btn active" id="s-shard" onclick="Mansion.setShape('shard')">Crystal Shard</button>
+            <button class="ctrl-btn" id="s-poly" onclick="Mansion.setShape('poly')">Hexa-Polygon</button>
+            <button class="ctrl-btn" id="s-star" onclick="Mansion.setShape('star')">Star Particle</button>
+            <button class="ctrl-btn" id="s-meme" onclick="Mansion.setShape('meme')">Meme Entity</button>
+
+            <div class="label">Quick Execution</div>
+            <button class="ctrl-btn" onclick="Mansion.swarm(100)">Inject 100 Entities</button>
+            <button class="ctrl-btn" onclick="Mansion.clear()" style="color: #ff5f56;">Purge All Particles</button>
         </div>
 
-        <div id="win-layer"></div>
+        <!-- Windows -->
+        <div id="win-games" class="window">
+            <div class="win-head"><span>REPOSITORY // GAME_CENTER</span><span style="cursor:pointer" onclick="Mansion.close('games')">×</span></div>
+            <div class="win-body" id="game-container"></div>
+        </div>
+
+        <div id="win-themes" class="window" style="width: 600px; height: 500px;">
+            <div class="win-head"><span>THEME // ENGINE</span><span style="cursor:pointer" onclick="Mansion.close('themes')">×</span></div>
+            <div class="win-body"><div class="grid" id="theme-grid"></div></div>
+        </div>
+
+        <div id="win-owner" class="window" style="width: 800px; height: 550px;">
+            <div class="win-head"><span>ROOT // ACCESS</span><span style="cursor:pointer" onclick="Mansion.close('owner')">×</span></div>
+            <div class="win-body"><div class="grid" id="owner-cmd-grid"></div></div>
+        </div>
 
         <div id="taskbar">
-            <div class="t-icon" title="Games" onclick="Mansion.spawn('games')">🎮</div>
-            <div class="t-icon" title="Themes" onclick="Mansion.spawn('themes')">🎨</div>
-            <div class="t-icon" title="Owner Tools" id="owner-icon" class="hidden" onclick="Mansion.spawn('owner')">👑</div>
+            <div class="t-icon" title="Games" onclick="Mansion.open('games')">⚔️</div>
+            <div class="t-icon" title="Themes" onclick="Mansion.open('themes')">🌌</div>
+            <div class="t-icon hidden" id="vip-icon" title="VIP Dashboard" onclick="Mansion.open('vip')">💎</div>
+            <div class="t-icon hidden" id="owner-icon" title="Owner Root" onclick="Mansion.open('owner')">👑</div>
         </div>
     </div>
 
     <script>
         const Mansion = {
-            rank: 'guest', orbs: [], activeWin: null,
-            ctx: null, canvas: null,
-            mods: { float: true, rgb: false, pulse: false, magnet: false, trails: false, speed: false },
+            rank: 'guest', entities: [], canvas: null, ctx: null, mouse: {x: -1000, y: -1000},
+            mods: { float: true, rgb: false, magnet: false, shape: 'shard' },
+            
             themes: [
-                { n: 'Honey Gold', a: '#ffcc33', g: 'rgba(255, 204, 51, 0.3)', b: '#050400' },
-                { n: 'Midnight Neon', a: '#00f2ff', g: 'rgba(0, 242, 255, 0.3)', b: '#020b12' },
-                { n: 'Vampire Red', a: '#ff1f1f', g: 'rgba(255, 31, 31, 0.3)', b: '#0a0000' },
-                { n: 'Toxic Lime', a: '#39ff14', g: 'rgba(57, 255, 20, 0.3)', b: '#030800' },
-                { n: 'Barbie Pink', a: '#ff007f', g: 'rgba(255, 0, 127, 0.3)', b: '#0d0006' },
-                { n: 'Royal Purple', a: '#bc13fe', g: 'rgba(188, 19, 254, 0.3)', b: '#08000f' },
-                { n: 'Ghost White', a: '#ffffff', g: 'rgba(255, 255, 255, 0.2)', b: '#0a0a0a' },
-                { n: 'Deep Sea', a: '#0077be', g: 'rgba(0, 119, 190, 0.3)', b: '#00050a' },
-                { n: 'Sunset Orange', a: '#ff4e00', g: 'rgba(255, 78, 0, 0.3)', b: '#0a0300' },
-                { n: 'Matrix Green', a: '#00ff41', g: 'rgba(0, 255, 65, 0.3)', b: '#000000' },
-                { n: 'Cyber Peach', a: '#ffb3a7', g: 'rgba(255, 179, 167, 0.3)', b: '#0f0a0a' }
+                { n: 'Void Gold', a: '#ffcc33', b: '#020204' },
+                { n: 'Cyber Neon', a: '#00f2ff', b: '#050a15' },
+                { n: 'Blood Moon', a: '#ff1f1f', b: '#0a0000' },
+                { n: 'Emerald City', a: '#50c878', b: '#010802' },
+                { n: 'Matrix', a: '#00ff41', b: '#000000' },
+                { n: 'Royal Purple', a: '#bc13fe', b: '#08000f' },
+                { n: 'Solar Flare', a: '#ff4e00', b: '#0a0200' },
+                { n: 'Oceanic', a: '#0077be', b: '#00050a' },
+                { n: 'Ghost', a: '#ffffff', b: '#0a0a0a' },
+                { n: 'Toxic', a: '#adff2f', b: '#050a00' }
+            ],
+
+            vipThemes: [
+                { n: 'Diamond', a: '#b9f2ff', b: '#0d1218' },
+                { n: 'Ruby VIP', a: '#e0115f', b: '#120101' },
+                { n: 'Platinum', a: '#e5e4e2', b: '#000000' },
+                { n: 'Golden Era', a: '#ffd700', b: '#0a0a00' },
+                { n: 'Black Hole', a: '#444444', b: '#000000' },
+                { n: 'Pink Nebula', a: '#ff007f', b: '#0a0006' },
+                { n: 'Deep Sea', a: '#191970', b: '#000005' },
+                { n: 'Frozen', a: '#afeeee', b: '#00080a' },
+                { n: 'Copper', a: '#b87333', b: '#050200' },
+                { n: 'Obsidian', a: '#1a1a1a', b: '#000000' }
+            ],
+
+            games: [
+                { n: 'Gladihoppers', u: 'usernamegth.github.io' },
+                { n: 'Slope', u: '96f.github.io' },
+                { n: 'Minecraft', u: 'classic.minecraft.net' },
+                { n: 'Retro Bowl', u: 'game316009.konggames.com' }
             ],
 
             init() {
                 const p = document.getElementById('sys-pass').value;
-                if(p === "masononly69") { this.rank = "OWNER"; document.getElementById('owner-icon').classList.remove('hidden'); }
-                else if(p === "honey") { this.rank = "MEMBER"; }
-                else { alert("ACCESS DENIED"); return; }
+                if(p === "masononly69") { this.rank = "OWNER"; this.unlockUI(['owner-icon', 'vip-icon']); }
+                else if(p === "vip420") { this.rank = "VIP"; this.unlockUI(['vip-icon']); }
+                else if(p === "honey") { this.rank = "USER"; }
+                else { alert("ACCESS_DENIED"); return; }
 
-                document.getElementById('auth-overlay').style.opacity = '0';
+                document.getElementById('auth-overlay').style.transform = 'translateY(-100%)';
                 setTimeout(() => {
                     document.getElementById('auth-overlay').style.display = 'none';
                     document.getElementById('desktop').style.display = 'block';
-                    this.startCanvas();
+                    this.bootEngine();
                 }, 1000);
             },
 
-            startCanvas() {
+            unlockUI(ids) { ids.forEach(id => document.getElementById(id).classList.remove('hidden')); },
+
+            bootEngine() {
                 this.canvas = document.getElementById('bg-canvas');
                 this.ctx = this.canvas.getContext('2d');
-                window.addEventListener('resize', () => this.resize());
-                this.resize();
-                this.animate();
-                for(let i=0; i<15; i++) this.spawnOrb();
+                window.onresize = () => { this.canvas.width = innerWidth; this.canvas.height = innerHeight; };
+                window.onmousemove = (e) => { this.mouse.x = e.clientX; this.mouse.y = e.clientY; };
+                window.onresize();
+                this.startClock();
+                this.loadGrids();
+                for(let i=0; i<40; i++) this.spawn();
+                this.render();
             },
 
-            resize() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
+            startClock() {
+                setInterval(() => {
+                    const d = new Date();
+                    document.getElementById('time-digit').innerText = d.toLocaleTimeString('en-GB', {hour12: false});
+                    document.getElementById('date-digit').innerText = d.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+                }, 1000);
             },
 
-            spawnOrb(x, y) {
-                this.orbs.push({
-                    x: x || Math.random() * innerWidth,
-                    y: y || Math.random() * innerHeight,
-                    vx: (Math.random() - 0.5) * 2,
-                    vy: (Math.random() - 0.5) * 2,
-                    r: 30 + Math.random() * 30,
-                    hue: Math.random() * 360
+            loadGrids() {
+                const tg = document.getElementById('theme-grid');
+                this.themes.forEach((t, i) => {
+                    tg.innerHTML += `<div class="card" onclick="Mansion.applyTheme(${i}, false)">${t.n}</div>`;
+                });
+                if(this.rank === 'VIP' || this.rank === 'OWNER') {
+                    this.vipThemes.forEach((t, i) => {
+                        tg.innerHTML += `<div class="card vip-txt" onclick="Mansion.applyTheme(${i}, true)">${t.n}</div>`;
+                    });
+                }
+                
+                const og = document.getElementById('owner-cmd-grid');
+                if(this.rank === 'OWNER') {
+                    for(let i=1; i<=20; i++) {
+                        og.innerHTML += `<div class="card owner-txt" onclick="Mansion.swarm(${i*50})">COMMAND: INJECT_${i*50}</div>`;
+                    }
+                }
+            },
+
+            spawn() {
+                this.entities.push({
+                    x: Math.random() * innerWidth, y: Math.random() * innerHeight,
+                    vx: (Math.random() - 0.5) * 3, vy: (Math.random() - 0.5) * 3,
+                    sz: 25 + Math.random() * 35, rot: Math.random() * 360,
+                    hue: Math.random() * 360, sides: 3 + Math.floor(Math.random() * 5)
                 });
             },
 
             toggle(m) {
                 this.mods[m] = !this.mods[m];
-                document.getElementById(`m-${m}`)?.classList.toggle('active');
+                const b = document.getElementById(`m-${m}`);
+                b.classList.toggle('active');
+                b.innerText = b.innerText.split('[')[0] + (this.mods[m] ? '[ON]' : '[OFF]');
             },
 
-            clearOrbs() { this.orbs = []; },
-            chaosBurst() { for(let i=0; i<50; i++) this.spawnOrb(); },
-
-            applyTheme(index) {
-                const t = this.themes[index];
-                document.documentElement.style.setProperty('--accent', t.a);
-                document.documentElement.style.setProperty('--glow', t.g);
-                document.documentElement.style.setProperty('--bg', t.b);
+            setShape(s) {
+                this.mods.shape = s;
+                document.querySelectorAll('.ctrl-btn').forEach(btn => btn.classList.remove('active'));
+                document.getElementById(`s-${s}`).classList.add('active');
             },
 
-            spawn(type) {
-                const id = 'win-' + type;
-                if(document.getElementById(id)) return;
-
-                const win = document.createElement('div');
-                win.id = id;
-                win.className = 'window';
-                win.style.width = '600px';
-                win.style.height = '400px';
-                win.style.top = '100px';
-                win.style.left = '100px';
-
-                let content = '';
-                if(type === 'themes') {
-                    content = '<div class="dash-grid">';
-                    this.themes.forEach((t, i) => {
-                        content += `<div class="theme-card" onclick="Mansion.applyTheme(${i})" style="border-bottom: 3px solid ${t.a}">${t.n}</div>`;
+            open(id) {
+                const win = document.getElementById('win-' + id);
+                win.style.display = 'flex';
+                win.style.top = '100px'; win.style.left = '200px';
+                this.drag(win);
+                if(id === 'games') {
+                    const gc = document.getElementById('game-container');
+                    gc.innerHTML = `<div class="grid"></div>`;
+                    this.games.forEach(g => {
+                        gc.firstChild.innerHTML += `<div class="card" onclick="Mansion.launchGame('${g.u}')">${g.n}</div>`;
                     });
-                    content += '</div>';
-                } else if(type === 'games') {
-                    content = `
-                        <div class="dash-grid">
-                            <div class="theme-card" onclick="Mansion.play('jcw87.github.io')">SANS FIGHT</div>
-                            <div class="theme-card" onclick="Mansion.play('96f.github.io')">SLOPE</div>
-                            <div class="theme-card" onclick="Mansion.play('flappybird.io')">FLAPPY BIRD</div>
-                            <div class="theme-card" onclick="Mansion.play('classic.minecraft.net')">MINECRAFT</div>
-                        </div>
-                    `;
-                } else if(type === 'owner') {
-                    content = `
-                        <div style="text-align:center">
-                            <h3>OWNER CONSOLE <span class="owner-badge">V16</span></h3>
-                            <hr style="opacity:0.1;margin:10px 0">
-                            <button class="option-btn" onclick="Mansion.chaosBurst()">Global Swarm</button>
-                            <button class="option-btn" onclick="alert('System Purge Initialized...')">Purge Sessions</button>
-                            <button class="option-btn" onclick="Mansion.clearOrbs()">Force Clear Canvas</button>
-                            <p style="font-size:10px; margin-top:20px">Mansion Status: <span style="color:var(--accent)">OPTIMAL</span></p>
-                        </div>
-                    `;
                 }
-
-                win.innerHTML = `
-                    <div class="win-header">
-                        <span class="win-title">${type}</span>
-                        <span class="win-close" onclick="this.parentElement.parentElement.remove()">×</span>
-                    </div>
-                    <div class="win-content" id="${type}-body">${content}</div>
-                `;
-                
-                document.getElementById('win-layer').appendChild(win);
-                this.makeDraggable(win);
             },
 
-            play(url) {
-                const body = document.querySelector('.win-content');
-                body.style.padding = '0';
-                body.innerHTML = `<iframe src="${url}"></iframe>`;
+            launchGame(url) {
+                document.getElementById('game-container').innerHTML = `<iframe src="${url}"></iframe>`;
             },
 
-            makeDraggable(el) {
-                let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-                el.querySelector('.win-header').onmousedown = dragMouseDown;
-                function dragMouseDown(e) {
-                    pos3 = e.clientX; pos4 = e.clientY;
-                    document.onmouseup = closeDragElement;
-                    document.onmousemove = elementDrag;
-                }
-                function elementDrag(e) {
-                    pos1 = pos3 - e.clientX; pos2 = pos4 - e.clientY;
-                    pos3 = e.clientX; pos4 = e.clientY;
-                    el.style.top = (el.offsetTop - pos2) + "px";
-                    el.style.left = (el.offsetLeft - pos1) + "px";
-                }
-                function closeDragElement() { document.onmouseup = null; document.onmousemove = null; }
+            close(id) { document.getElementById('win-' + id).style.display = 'none'; },
+
+            applyTheme(i, isVip) {
+                const t = isVip ? this.vipThemes[i] : this.themes[i];
+                document.documentElement.style.setProperty('--accent', t.a);
+                document.documentElement.style.setProperty('--bg', t.b);
+                document.documentElement.style.setProperty('--glow', t.a + '44');
             },
 
-            animate() {
-                if(!this.ctx) return;
-                this.ctx.fillStyle = this.mods.trails ? 'rgba(0,0,0,0.1)' : getComputedStyle(document.documentElement).getPropertyValue('--bg');
-                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            swarm(n) { for(let i=0; i<n; i++) this.spawn(); },
+            clear() { this.entities = []; },
 
-                this.orbs.forEach(o => {
-                    if(this.mods.float) {
-                        o.x += o.vx * (this.mods.speed ? 5 : 1);
-                        o.y += o.vy * (this.mods.speed ? 5 : 1);
+            drag(el) {
+                let p1=0, p2=0, p3=0, p4=0;
+                el.querySelector('.win-head').onmousedown = (e) => {
+                    p3=e.clientX; p4=e.clientY;
+                    document.onmouseup = () => { document.onmouseup = null; document.onmousemove = null; };
+                    document.onmousemove = (e) => {
+                        p1=p3-e.clientX; p2=p4-e.clientY; p3=e.clientX; p4=e.clientY;
+                        el.style.top = (el.offsetTop-p2)+"px"; el.style.left = (el.offsetLeft-p1)+"px";
+                    };
+                };
+            },
+
+            render() {
+                this.ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg');
+                this.ctx.fillRect(0,0,innerWidth,innerHeight);
+                const accent = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+
+                this.entities.forEach(e => {
+                    if(this.mods.float) { e.x += e.vx; e.y += e.vy; e.rot += 0.5; }
+                    if(this.mods.magnet) {
+                        const dx = this.mouse.x - e.x, dy = this.mouse.y - e.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if(dist < 300) { e.x += dx * 0.02; e.y += dy * 0.02; }
                     }
-                    
-                    if(o.x < 0 || o.x > innerWidth) o.vx *= -1;
-                    if(o.y < 0 || o.y > innerHeight) o.vy *= -1;
 
-                    let radius = o.r;
-                    if(this.mods.pulse) radius += Math.sin(Date.now() * 0.01) * 10;
+                    if(e.x < 0 || e.x > innerWidth) e.vx *= -1;
+                    if(e.y < 0 || e.y > innerHeight) e.vy *= -1;
 
+                    this.ctx.save();
+                    this.ctx.translate(e.x, e.y);
+                    this.ctx.rotate(e.rot * Math.PI / 180);
+                    this.ctx.strokeStyle = this.mods.rgb ? `hsl(${e.hue}, 100%, 50%)` : accent;
+                    this.ctx.lineWidth = 1.5;
                     this.ctx.beginPath();
-                    this.ctx.arc(o.x, o.y, radius, 0, Math.PI * 2);
-                    let color = this.mods.rgb ? `hsla(${o.hue}, 70%, 60%, 0.5)` : getComputedStyle(document.documentElement).getPropertyValue('--accent');
-                    this.ctx.fillStyle = color;
-                    this.ctx.shadowBlur = 20;
-                    this.ctx.shadowColor = color;
-                    this.ctx.fill();
-                    if(this.mods.rgb) o.hue += 1;
-                });
 
-                requestAnimationFrame(() => this.animate());
+                    if(this.mods.shape === 'shard') {
+                        this.ctx.moveTo(0, -e.sz); this.ctx.lineTo(e.sz/3, 0); this.ctx.lineTo(0, e.sz); this.ctx.lineTo(-e.sz/3, 0);
+                    } else if(this.mods.shape === 'poly') {
+                        for(let i=0; i<6; i++) this.ctx.lineTo(e.sz * Math.cos(i*2*Math.PI/6), e.sz * Math.sin(i*2*Math.PI/6));
+                    } else if(this.mods.shape === 'star') {
+                        for(let i=0; i<10; i++) {
+                            const r = (i%2===0) ? e.sz : e.sz/2;
+                            this.ctx.lineTo(r * Math.cos(i*Math.PI/5), r * Math.sin(i*Math.PI/5));
+                        }
+                    } else if(this.mods.shape === 'meme') {
+                        this.ctx.font = `${e.sz}px Arial`;
+                        this.ctx.fillText("🤡", -e.sz/2, e.sz/2);
+                    }
+
+                    this.ctx.closePath();
+                    this.ctx.stroke();
+                    this.ctx.restore();
+                    if(this.mods.rgb) e.hue++;
+                });
+                requestAnimationFrame(() => this.render());
             }
         };
     </script>
