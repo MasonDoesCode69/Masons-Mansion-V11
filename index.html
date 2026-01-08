@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mason’s Mansion | V7 Terminal</title>
+    <style>
+        :root {
+            --bg: #020202;
+            --accent: #00f2ff;
+            --glow: rgba(0, 242, 255, 0.4);
+            --glass: rgba(12, 12, 12, 0.85);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --font: 'Consolas', 'Courier New', monospace;
+            --underglow: 0 0 25px var(--glow);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body, html { 
+            width: 100%; height: 100%; overflow: hidden; 
+            background: var(--bg); color: var(--text); 
+            font-family: var(--font); cursor: crosshair;
+        }
+
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.4; }
+
+        /* --- TOP LEFT AUTH --- */
+        #top-auth {
+            position: fixed; top: 15px; left: 15px; z-index: 10000;
+            display: flex; gap: 8px; background: var(--glass);
+            padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+            backdrop-filter: blur(10px);
+        }
+        #top-auth input {
+            background: #000; border: 1px solid var(--border);
+            color: var(--accent); padding: 5px 10px; border-radius: 4px; width: 130px;
+        }
+        #top-auth button {
+            background: var(--accent); color: #000; border: none;
+            padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer;
+        }
+
+        /* --- DESKTOP --- */
+        #desktop { position: relative; width: 100vw; height: 100vh; z-index: 10; display: none; }
+
+        /* --- WINDOWS --- */
+        .window {
+            position: absolute; background: var(--glass);
+            border: 1px solid var(--border); border-radius: 12px;
+            backdrop-filter: blur(20px); display: flex; flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), var(--underglow);
+            overflow: hidden;
+        }
+        .win-header {
+            padding: 10px 15px; background: rgba(255,255,255,0.03);
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: move; border-bottom: 1px solid var(--border);
+        }
+        .win-title { font-size: 11px; font-weight: 900; color: var(--accent); text-transform: uppercase; }
+        .win-close { width: 10px; height: 10px; background: #ff5f56; border-radius: 50%; cursor: pointer; }
+
+        /* --- TERMINAL --- */
+        .term-body { padding: 15px; height: 250px; display: flex; flex-direction: column; background: #000; }
+        .term-out { flex: 1; overflow-y: auto; font-size: 13px; color: #00ff00; margin-bottom: 10px; }
+        .term-in-row { display: flex; gap: 5px; color: #00ff00; }
+        #term-input { background: transparent; border: none; color: #fff; flex: 1; font-family: var(--font); }
+
+        /* --- OWNER PANEL --- */
+        .owner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; }
+        .owner-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+            color: #fff; padding: 12px; border-radius: 6px; cursor: pointer;
+            font-size: 11px; transition: 0.3s;
+        }
+        .owner-btn:hover { background: var(--accent); color: #000; border-color: #fff; }
+
+        /* --- TASKBAR --- */
+        #taskbar {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--glass); border: 1px solid var(--border);
+            padding: 8px 15px; border-radius: 15px; display: flex; gap: 12px;
+            backdrop-filter: blur(20px); z-index: 1000; box-shadow: var(--underglow);
+        }
+        .task-icon {
+            width: 42px; height: 42px; display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.03); border-radius: 10px; cursor: pointer;
+            font-size: 20px; transition: 0.3s;
+        }
+        .task-icon:hover { transform: translateY(-8px); background: var(--accent); color: #000; }
+
+        /* --- ANIMATIONS --- */
+        @keyframes vip-rgb {
+            0% { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; }
+            33% { border-color: #00ff00; box-shadow: 0 0 15px #00ff00; }
+            66% { border-color: #0000ff; box-shadow: 0 0 15px #0000ff; }
+            100% { border-color: #ff0000; box-shadow: 0 0 15px #ff0000; }
+        }
+        .vip-active { animation: vip-rgb 3s infinite linear !important; border-width: 2px !important; }
+
+        iframe { width: 100%; flex: 1; border: none; background: #000; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="top-auth">
+        <input type="password" id="login-pass" placeholder="PASSWORD">
+        <button onclick="Core.login()">BOOT</button>
+    </div>
+
+    <div id="desktop">
+        <div id="windows-root"></div>
+
+        <div id="taskbar">
+            <div class="task-icon" title="Games" onclick="Core.win('games')">🎮</div>
+            <div class="task-icon" title="Terminal" onclick="Core.win('terminal')">📟</div>
+            <div id="owner-btn" class="task-icon hidden" title="Owner Panel" onclick="Core.win('owner')">👑</div>
+            <div class="task-icon" title="Panic" onclick="Core.panic()">🚨</div>
+        </div>
+    </div>
+
+    <script>
+        const Core = {
+            rank: 'guest',
+            zIndex: 100,
+            isVip: false,
+            isRgb: false,
+
+            login() {
+                const p = document.getElementById('login-pass').value;
+                if(p === "masononly69") {
+                    this.rank = "OWNER";
+                    document.getElementById('owner-btn').classList.remove('hidden');
+                    this.launch();
+                } else if(p === "Honey") {
+                    this.rank = "MEMBER";
+                    this.launch();
+                } else { alert("INVALID ACCESS KEY"); }
+            },
+
+            launch() {
+                document.getElementById('top-auth').style.display = "none";
+                document.getElementById('desktop').style.display = "block";
+                this.initBg();
+                this.win('games');
+            },
+
+            win(type) {
+                const id = 'win-' + Math.random().toString(36).substr(2, 5);
+                const w = document.createElement('div');
+                w.className = 'window';
+                if(this.isVip) w.classList.add('vip-active');
+                w.id = id;
+                w.style.width = "500px"; w.style.height = "350px";
+                w.style.left = "200px"; w.style.top = "150px";
+                w.style.zIndex = ++this.zIndex;
+
+                let html = '';
+                if(type === 'terminal') {
+                    html = `
+                        <div class="term-body" onclick="document.getElementById('term-input').focus()">
+                            <div class="term-out" id="term-out">Mansion Terminal V7.0.1<br>Type 'help' for commands.</div>
+                            <div class="term-in-row"><span>></span><input id="term-input" onkeydown="Core.handleTerm(event)"></div>
+                        </div>`;
+                } else if(type === 'games') {
+                    html = `<div style="padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:15px;">
+                        <button class="owner-btn" onclick="Core.play('https://xfrapo.github.io/projectroyal/projects/gladihoppers/index.html', 'Gladihoppers')">
+                            ⚔️ Gladihoppers
+                        </button>
+                    </div>`;
+                } else if(type === 'owner') {
+                    html = `<div class="owner-grid">
+                        <button class="owner-btn" onclick="Core.toggleRgb()">Toggle Site RGB</button>
+                        <button class="owner-btn" onclick="Core.toggleUnderglow()">Toggle Underglow</button>
+                        <button class="owner-btn" onclick="alert('Stealth Active')">Cloak Tab</button>
+                        <button class="owner-btn" onclick="Core.panic()">Emergency Wipe</button>
+                        <button class="owner-btn" onclick="Core.isVip = true; alert('VIP Overridden')">Force VIP Status</button>
+                        <button class="owner-btn" onclick="location.reload()">System Reboot</button>
+                    </div>`;
+                }
+
+                w.innerHTML = `
+                    <div class="win-header" onmousedown="Core.drag(event, '${id}')">
+                        <div class="win-title">SYS/${type}</div>
+                        <div class="win-close" onclick="document.getElementById('${id}').remove()"></div>
+                    </div>
+                    ${html}`;
+                document.getElementById('windows-root').appendChild(w);
+            },
+
+            handleTerm(e) {
+                if(e.key === 'Enter') {
+                    const input = e.target.value.toLowerCase();
+                    const out = document.getElementById('term-out');
+                    if(input === 'vip67') {
+                        this.isVip = true;
+                        out.innerHTML += `<br><span style="color:cyan">> ACCESS GRANTED. VIP RGB INITIALIZED.</span>`;
+                        document.querySelectorAll('.window').forEach(w => w.classList.add('vip-active'));
+                    } else if(input === 'help') {
+                        out.innerHTML += `<br>> Commands: help, clear, status, vip_check`;
+                    } else if(input === 'clear') {
+                        out.innerHTML = `Terminal Cleared.`;
+                    } else {
+                        out.innerHTML += `<br>> Unknown command: ${input}`;
+                    }
+                    e.target.value = '';
+                    out.scrollTop = out.scrollHeight;
+                }
+            },
+
+            play(url, name) {
+                const id = 'p-' + Date.now();
+                const w = document.createElement('div');
+                w.className = 'window';
+                if(this.isVip) w.classList.add('vip-active');
+                w.id = id; w.style.width = "80%"; w.style.height = "80%";
+                w.style.left = "10%"; w.style.top = "10%";
+                w.style.zIndex = ++this.zIndex;
+                w.innerHTML = `
+                    <div class="win-header" onmousedown="Core.drag(event, '${id}')">
+                        <div class="win-title">${name}</div>
+                        <div class="win-close" onclick="document.getElementById('${id}').remove()"></div>
+                    </div>
+                    <iframe src="${url}"></iframe>`;
+                document.getElementById('windows-root').appendChild(w);
+            },
+
+            toggleRgb() {
+                this.isRgb = !this.isRgb;
+                if(this.isRgb) {
+                    let h = 0;
+                    this.rgbInt = setInterval(() => {
+                        h = (h + 2) % 360;
+                        document.documentElement.style.setProperty('--accent', `hsl(${h}, 100%, 50%)`);
+                        document.documentElement.style.setProperty('--glow', `hsla(${h}, 100%, 50%, 0.4)`);
+                    }, 50);
+                } else {
+                    clearInterval(this.rgbInt);
+                    document.documentElement.style.setProperty('--accent', '#00f2ff');
+                }
+            },
+
+            toggleUnderglow() {
+                const root = document.documentElement;
+                const current = root.style.getPropertyValue('--underglow');
+                root.style.setProperty('--underglow', current === 'none' ? '0 0 25px var(--glow)' : 'none');
+            },
+
+            drag(e, id) {
+                const el = document.getElementById(id);
+                el.style.zIndex = ++this.zIndex;
+                let ox = e.clientX - el.offsetLeft, oy = e.clientY - el.offsetTop;
+                const mm = (e) => { el.style.left = (e.clientX - ox) + "px"; el.style.top = (e.clientY - oy) + "px"; };
+                const mu = () => { window.removeEventListener('mousemove', mm); };
+                window.addEventListener('mousemove', mm);
+                window.addEventListener('mouseup', mu);
+            },
+
+            panic() { window.location.replace("https://www.google.com/search?q=chemistry+periodic+table"); },
+
+            initBg() {
+                const c = document.getElementById('bg-canvas');
+                const ctx = c.getContext('2d');
+                c.width = window.innerWidth; c.height = window.innerHeight;
+                function draw() {
+                    ctx.fillStyle = "rgba(0,0,0,0.1)";
+                    ctx.fillRect(0,0,c.width,c.height);
+                    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent');
+                    for(let i=0; i<3; i++) ctx.fillRect(Math.random()*c.width, Math.random()*c.height, 1, 1);
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            }
+        };
+    </script>
+</body>
+</html>
